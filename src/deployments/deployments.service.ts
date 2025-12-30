@@ -91,6 +91,11 @@ export class DeploymentsService {
       infraEnv['DB_USER'] = 'user';
       infraEnv['DB_PASSWORD'] = 'password';
       infraEnv['DB_NAME'] = dbName;
+      infraEnv['POSTGRES_HOST'] = `${appName}-postgres`;
+      infraEnv['POSTGRES_PORT'] = '5432';
+      infraEnv['POSTGRES_USER'] = 'user';
+      infraEnv['POSTGRES_PASSWORD'] = 'password';
+      infraEnv['POSTGRES_DB'] = dbName;
     }
     if (project.useRedis) {
       infraEnv['REDIS_HOST'] = `${appName}-redis`;
