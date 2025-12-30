@@ -85,16 +85,19 @@ export class DeploymentsService {
     const infraEnv: Record<string, string> = {};
     if (project.dbType === 'postgresql') {
       const dbName = appName.replace(/-/g, '_');
-      infraEnv['DATABASE_URL'] = `postgresql://user:password@${appName}-postgres:5432/${dbName}`;
+      const dbUser = this.configService.get<string>('INFRA_POSTGRES_USER') || 'user';
+      const dbPassword = this.configService.get<string>('INFRA_POSTGRES_PASSWORD') || 'password';
+
+      infraEnv['DATABASE_URL'] = `postgresql://${dbUser}:${dbPassword}@${appName}-postgres:5432/${dbName}`;
       infraEnv['DB_HOST'] = `${appName}-postgres`;
       infraEnv['DB_PORT'] = '5432';
-      infraEnv['DB_USER'] = 'user';
-      infraEnv['DB_PASSWORD'] = 'password';
+      infraEnv['DB_USER'] = dbUser;
+      infraEnv['DB_PASSWORD'] = dbPassword;
       infraEnv['DB_NAME'] = dbName;
       infraEnv['POSTGRES_HOST'] = `${appName}-postgres`;
       infraEnv['POSTGRES_PORT'] = '5432';
-      infraEnv['POSTGRES_USER'] = 'user';
-      infraEnv['POSTGRES_PASSWORD'] = 'password';
+      infraEnv['POSTGRES_USER'] = dbUser;
+      infraEnv['POSTGRES_PASSWORD'] = dbPassword;
       infraEnv['POSTGRES_DB'] = dbName;
     }
     if (project.useRedis) {
@@ -123,7 +126,13 @@ export class DeploymentsService {
     const serviceYaml = generateServiceYaml(appName, 80, containerPort, project.port);
     const ingressYaml = generateIngressYaml(appName, domain, appName);
 
-    const postgresYaml = project.dbType === 'postgresql' ? generatePostgresYaml(appName) : null;
+    const postgresYaml = project.dbType === 'postgresql'
+      ? generatePostgresYaml(
+        appName,
+        this.configService.get<string>('INFRA_POSTGRES_USER') || 'user',
+        this.configService.get<string>('INFRA_POSTGRES_PASSWORD') || 'password',
+      )
+      : null;
     const redisYaml = project.useRedis ? generateRedisYaml(appName) : null;
     const esYaml = project.useElasticsearch ? generateElasticsearchYaml(appName) : null;
 

@@ -37,30 +37,47 @@ interface RepositoryResponse {
 
 @Injectable()
 export class GithubService {
-  constructor(private configService: ConfigService) {}
+  constructor(private configService: ConfigService) { }
 
   async getRepositories(accessToken: string): Promise<RepositoryResponse[]> {
     if (!accessToken) {
       throw new Error('GitHub access token is missing');
     }
 
+    const allRepos: GitHubRepo[] = [];
+    let page = 1;
+    const perPage = 100;
+
     try {
-      const response = await axios.get<GitHubRepo[]>(
-        'https://api.github.com/user/repos',
-        {
-          headers: {
-            Authorization: `token ${accessToken}`,
-            Accept: 'application/vnd.github.v3+json',
+      while (true) {
+        const response = await axios.get<GitHubRepo[]>(
+          'https://api.github.com/user/repos',
+          {
+            headers: {
+              Authorization: `token ${accessToken}`,
+              Accept: 'application/vnd.github.v3+json',
+            },
+            params: {
+              per_page: perPage,
+              page: page,
+              sort: 'updated',
+              affiliation: 'owner,collaborator,organization_member',
+            },
           },
-          params: {
-            per_page: 100,
-            sort: 'updated',
-          },
-        },
-      );
+        );
+
+        allRepos.push(...response.data);
+
+        // Check for next page in Link header
+        const linkHeader = response.headers['link'];
+        if (!linkHeader || !linkHeader.includes('rel="next"')) {
+          break;
+        }
+        page++;
+      }
 
       const reposWithCommits = await Promise.allSettled(
-        response.data.map(async (repo: GitHubRepo) => {
+        allRepos.map(async (repo: GitHubRepo) => {
           let lastCommitDate = repo.updated_at;
           try {
             const commitResponse = await axios.get<GitHubCommit[]>(

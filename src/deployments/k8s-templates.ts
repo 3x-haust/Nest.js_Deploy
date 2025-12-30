@@ -113,7 +113,11 @@ spec:
                   number: 80
 `;
 
-export const generatePostgresYaml = (appName: string) => `apiVersion: v1
+export const generatePostgresYaml = (
+  appName: string,
+  user: string = 'user',
+  password: string = 'password',
+) => `apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: ${appName}-postgres-pvc
@@ -145,9 +149,9 @@ spec:
             - name: POSTGRES_DB
               value: ${appName.replace(/-/g, '_')}
             - name: POSTGRES_USER
-              value: user
+              value: ${user}
             - name: POSTGRES_PASSWORD
-              value: password
+              value: ${password}
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata
           ports:
