@@ -17,7 +17,7 @@ import { User } from '../auth/user.entity';
 @Controller('projects')
 @UseGuards(JwtAuthGuard)
 export class ProjectsController {
-  constructor(private readonly projectsService: ProjectsService) { }
+  constructor(private readonly projectsService: ProjectsService) {}
 
   @Post()
   create(@Body() createProjectDto: CreateProjectDto, @GetUser() user: User) {

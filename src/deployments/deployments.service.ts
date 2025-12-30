@@ -111,11 +111,45 @@ export class DeploymentsService {
       infraEnv['ELASTICSEARCH_URL'] = `http://${appName}-elasticsearch:9200`;
     }
 
+    if (framework === 'springboot') {
+      if (project.dbType === 'postgresql') {
+        const dbName = appName.replace(/-/g, '_');
+        const dbUser =
+          this.configService.get<string>('INFRA_POSTGRES_USER') || 'postgres';
+        const dbPassword =
+          this.configService.get<string>('INFRA_POSTGRES_PASSWORD') ||
+          'password';
+        infraEnv['SPRING_DATASOURCE_URL'] =
+          `jdbc:postgresql://${appName}-postgres:5432/${dbName}`;
+        infraEnv['SPRING_DATASOURCE_USERNAME'] = dbUser;
+        infraEnv['SPRING_DATASOURCE_PASSWORD'] = dbPassword;
+      }
+      if (project.useRedis) {
+        infraEnv['SPRING_DATA_REDIS_HOST'] = `${appName}-redis`;
+        infraEnv['SPRING_DATA_REDIS_PORT'] = '6379';
+      }
+      if (project.useElasticsearch) {
+        infraEnv['SPRING_ELASTICSEARCH_URIS'] =
+          `http://${appName}-elasticsearch:9200`;
+      }
+    }
+
     const mergedEnv = { ...(project.envVariables || {}), ...infraEnv };
 
-    const hasEnvVars = Object.keys(mergedEnv).length > 0;
+    const finalizedEnv: Record<string, string> = {};
+    Object.entries(mergedEnv).forEach(([key, value]) => {
+      const sanitizedKey = key.includes('.')
+        ? key.toUpperCase().replace(/\./g, '_')
+        : key;
+      finalizedEnv[sanitizedKey] = value;
+      if (sanitizedKey !== key) {
+        finalizedEnv[key] = value;
+      }
+    });
+
+    const hasEnvVars = Object.keys(finalizedEnv).length > 0;
     const configMapYaml = hasEnvVars
-      ? generateConfigMapYaml(appName, mergedEnv)
+      ? generateConfigMapYaml(appName, finalizedEnv)
       : null;
 
     const containerPort = framework === 'springboot' ? 8080 : 3000;
