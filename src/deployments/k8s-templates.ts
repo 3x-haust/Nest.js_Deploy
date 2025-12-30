@@ -41,13 +41,14 @@ spec:
           image: ${imageName.replace('localhost', '192.168.0.2')}
           ports:
             - containerPort: ${containerPort}
-          imagePullPolicy: Always${hasConfigMap
-    ? `
+          imagePullPolicy: Always${
+            hasConfigMap
+              ? `
           envFrom:
             - configMapRef:
                 name: ${appName}-config`
-    : ''
-  }
+              : ''
+          }
 `;
 
 export const generateServiceYaml = (
@@ -195,7 +196,9 @@ spec:
       targetPort: 6379
 `;
 
-export const generateElasticsearchYaml = (appName: string) => `apiVersion: apps/v1
+export const generateElasticsearchYaml = (
+  appName: string,
+) => `apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ${appName}-elasticsearch

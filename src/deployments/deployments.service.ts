@@ -82,7 +82,6 @@ export class DeploymentsService {
     const imageName = `localhost:5000/${appName}-${framework}:latest`;
     const domain = project.domain || 'example.com';
 
-    // Inject infrastructure environment variables
     const infraEnv: Record<string, string> = {};
     if (project.dbType === 'postgresql') {
       const dbName = appName.replace(/-/g, '_');
@@ -103,7 +102,6 @@ export class DeploymentsService {
 
     const mergedEnv = { ...infraEnv, ...(project.envVariables || {}) };
 
-    // Generate ConfigMap if environment variables exist
     const hasEnvVars = Object.keys(mergedEnv).length > 0;
     const configMapYaml = hasEnvVars
       ? generateConfigMapYaml(appName, mergedEnv)
@@ -120,7 +118,6 @@ export class DeploymentsService {
     const serviceYaml = generateServiceYaml(appName, 80, containerPort, project.port);
     const ingressYaml = generateIngressYaml(appName, domain, appName);
 
-    // Generate Infra Yamls
     const postgresYaml = project.dbType === 'postgresql' ? generatePostgresYaml(appName) : null;
     const redisYaml = project.useRedis ? generateRedisYaml(appName) : null;
     const esYaml = project.useElasticsearch ? generateElasticsearchYaml(appName) : null;

@@ -31,6 +31,7 @@
     "@nestjs/websockets": "^11.1.11",
     "@types/ssh2": "^1.15.5",
     "axios": "^1.13.2",
+    "class-validator": "^0.14.3",
     "cookie-parser": "^1.4.7",
     "passport": "^0.7.0",
     "passport-github2": "^0.1.12",
