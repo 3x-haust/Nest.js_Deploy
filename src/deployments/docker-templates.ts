@@ -1,11 +1,18 @@
 export const generateDockerfile = (
   framework: string,
   installCommand: string,
+  envKeys: string[] = [],
 ): string => {
   const isYarn = installCommand ? installCommand.includes('yarn') : true; // Default to yarn if not specified
   const install = installCommand || 'yarn install';
   const build = isYarn ? 'yarn build' : 'npm run build';
   const lockFile = isYarn ? 'COPY yarn.lock ./' : '';
+
+  // Extract variables that need to be available at build time (e.g., VITE_*)
+  const buildArgs = envKeys
+    .filter((key) => key.startsWith('VITE_') || key.startsWith('REACT_APP_'))
+    .map((key) => `ARG ${key}\nENV ${key}=$${key}`)
+    .join('\n');
 
   switch (framework) {
     case 'react':
@@ -24,6 +31,8 @@ ${lockFile}
 RUN ${install}
 
 COPY . .
+
+${buildArgs}
 
 RUN ${build}
 

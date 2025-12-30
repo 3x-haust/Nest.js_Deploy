@@ -138,6 +138,7 @@ export class DeploymentsService {
       postgresYaml,
       redisYaml,
       esYaml,
+      mergedEnv,
       deployment.id,
     ).catch((err) => console.error('SSH deployment failed', err));
 
@@ -155,6 +156,7 @@ export class DeploymentsService {
     postgresYaml: string | null,
     redisYaml: string | null,
     esYaml: string | null,
+    mergedEnv: Record<string, string>,
     deploymentId: number,
   ) {
     const sshHost = this.configService.get<string>('SSH_HOST');
@@ -181,11 +183,18 @@ export class DeploymentsService {
     console.log('Deploying project:', project);
 
     const projectPath = `${project.name}_${project.framework || 'unknown'}`;
+    const envKeys = Object.keys(mergedEnv);
     const dockerfileContent = generateDockerfile(
       project.framework,
       project.installCommand,
+      envKeys,
     );
     const safeDockerfileContent = dockerfileContent.replace(/"/g, '\\"');
+
+    const buildArgs = envKeys
+      .filter((key) => key.startsWith('VITE_') || key.startsWith('REACT_APP_'))
+      .map((key) => `--build-arg ${key}="${mergedEnv[key].replace(/"/g, '\\"')}"`)
+      .join(' ');
 
     const commands = [
       'set -e',
@@ -203,7 +212,7 @@ export class DeploymentsService {
       `# 1. Check if Dockerfile exists in Git repository`,
       `if git ls-files --error-unmatch Dockerfile > /dev/null 2>&1; then`,
       `  echo "User-provided Dockerfile found in repository. Using it..."`,
-      `  docker build -t ${imageName} .`,
+      `  docker build ${buildArgs} -t ${imageName} .`,
       `else`,
       `  # 2. Not tracked by Git, check if we need to go into a subdir for package.json`,
       `  if [ ! -f package.json ]; then`,
@@ -222,7 +231,7 @@ export class DeploymentsService {
       `    echo "${safeDockerfileContent}" > Dockerfile`,
       `  fi`,
 
-      `  docker build -t ${imageName} .`,
+      `  docker build ${buildArgs} -t ${imageName} .`,
       `fi`,
 
       `docker push ${imageName}`,
@@ -303,7 +312,6 @@ export class DeploymentsService {
               console.log('STDOUT: ' + logChunk);
               output += logChunk;
               this.deploymentsGateway.sendLog(deploymentId, logChunk);
-              // Save logs to database in real-time
               await this.deploymentsRepository.update(deploymentId, {
                 buildLogs: output,
               });
@@ -313,7 +321,6 @@ export class DeploymentsService {
               console.log('STDERR: ' + logChunk);
               output += logChunk;
               this.deploymentsGateway.sendLog(deploymentId, logChunk);
-              // Save logs to database in real-time
               await this.deploymentsRepository.update(deploymentId, {
                 buildLogs: output,
               });
