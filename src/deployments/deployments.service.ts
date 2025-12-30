@@ -189,7 +189,6 @@ export class DeploymentsService {
       project.installCommand,
       envKeys,
     );
-    const safeDockerfileContent = dockerfileContent.replace(/"/g, '\\"');
 
     const buildArgs = envKeys
       .filter((key) => key.startsWith('VITE_') || key.startsWith('REACT_APP_'))
@@ -228,7 +227,9 @@ export class DeploymentsService {
       `    echo "User-provided Dockerfile found in subdirectory. Using it..."`,
       `  else`,
       `    echo "No user-provided Dockerfile found in repository. Generating one for ${project.framework}..."`,
-      `    echo "${safeDockerfileContent}" > Dockerfile`,
+      `    cat << 'EOF' > Dockerfile`,
+      `${dockerfileContent}`,
+      `EOF`,
       `  fi`,
 
       `  docker build ${buildArgs} -t ${imageName} .`,
