@@ -8,15 +8,15 @@ import { User } from './user.entity';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   @Get('github')
   @UseGuards(GithubAuthGuard)
-  async githubLogin() {}
+  async githubLogin() { }
 
   @Get('github/callback')
   @UseGuards(GithubAuthGuard)
-  githubCallback(@Req() req: Request, @Res() res: Response) {
+  githubCallback(@Req() req: any, @Res() res: Response) {
     const user = req.user as User;
     if (!user) {
       const frontendUrl = process.env.FRONTEND_URL;
