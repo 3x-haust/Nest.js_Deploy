@@ -79,4 +79,27 @@ export class ProjectsController {
   getSettings(@Param('id', ParseIntPipe) id: number, @GetUser() user: User) {
     return this.projectsService.getSettings(id, user.id);
   }
+
+  @Get(':id/members')
+  getMembers(@Param('id', ParseIntPipe) id: number, @GetUser() user: User) {
+    return this.projectsService.getMembers(id, user.id);
+  }
+
+  @Post(':id/members')
+  inviteMember(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('username') username: string,
+    @GetUser() user: User,
+  ) {
+    return this.projectsService.inviteMember(id, user.id, username);
+  }
+
+  @Delete(':id/members/:userId')
+  removeMember(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('userId', ParseIntPipe) targetUserId: number,
+    @GetUser() user: User,
+  ) {
+    return this.projectsService.removeMember(id, user.id, targetUserId);
+  }
 }

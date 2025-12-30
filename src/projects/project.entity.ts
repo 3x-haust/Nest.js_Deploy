@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { User } from '../auth/user.entity';
 import { Deployment } from '../deployments/deployment.entity';
+import { ProjectMember } from './project-member.entity';
 
 @Entity()
 export class Project {
@@ -32,8 +33,6 @@ export class Project {
 
   @Column()
   language: string;
-
-
 
   @Column({ nullable: true })
   framework: string;
@@ -70,6 +69,9 @@ export class Project {
 
   @OneToMany(() => Deployment, (deployment) => deployment.project)
   deployments: Deployment[];
+
+  @OneToMany(() => ProjectMember, (member) => member.project)
+  members: ProjectMember[];
 
   @CreateDateColumn()
   createdAt: Date;

@@ -37,7 +37,7 @@ interface RepositoryResponse {
 
 @Injectable()
 export class GithubService {
-  constructor(private configService: ConfigService) { }
+  constructor(private configService: ConfigService) {}
 
   async getRepositories(accessToken: string): Promise<RepositoryResponse[]> {
     if (!accessToken) {
@@ -68,7 +68,6 @@ export class GithubService {
 
         allRepos.push(...response.data);
 
-        // Check for next page in Link header
         const linkHeader = response.headers['link'];
         if (!linkHeader || !linkHeader.includes('rel="next"')) {
           break;

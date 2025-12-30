@@ -50,13 +50,14 @@ spec:
           image: ${imageName.replace('localhost', '192.168.0.2')}
           ports:
             - containerPort: ${containerPort}
-          imagePullPolicy: Always${hasConfigMap
-    ? `
+          imagePullPolicy: Always${
+            hasConfigMap
+              ? `
           envFrom:
             - configMapRef:
                 name: ${appName}-config`
-    : ''
-  }
+              : ''
+          }
 `;
 
 export const generateServiceYaml = (
@@ -115,7 +116,7 @@ spec:
 
 export const generatePostgresYaml = (
   appName: string,
-  user: string = 'user',
+  user: string = 'postgres',
   password: string = 'password',
 ) => `apiVersion: v1
 kind: PersistentVolumeClaim

@@ -26,7 +26,7 @@ export class DeploymentsService {
     private projectsRepository: Repository<Project>,
     private configService: ConfigService,
     private deploymentsGateway: DeploymentsGateway,
-  ) { }
+  ) {}
 
   async create(
     projectId: number,
@@ -85,10 +85,13 @@ export class DeploymentsService {
     const infraEnv: Record<string, string> = {};
     if (project.dbType === 'postgresql') {
       const dbName = appName.replace(/-/g, '_');
-      const dbUser = this.configService.get<string>('INFRA_POSTGRES_USER') || 'user';
-      const dbPassword = this.configService.get<string>('INFRA_POSTGRES_PASSWORD') || 'password';
+      const dbUser =
+        this.configService.get<string>('INFRA_POSTGRES_USER') || 'postgres';
+      const dbPassword =
+        this.configService.get<string>('INFRA_POSTGRES_PASSWORD') || 'password';
 
-      infraEnv['DATABASE_URL'] = `postgresql://${dbUser}:${dbPassword}@${appName}-postgres:5432/${dbName}`;
+      infraEnv['DATABASE_URL'] =
+        `postgresql://${dbUser}:${dbPassword}@${appName}-postgres:5432/${dbName}`;
       infraEnv['DB_HOST'] = `${appName}-postgres`;
       infraEnv['DB_PORT'] = '5432';
       infraEnv['DB_USER'] = dbUser;
@@ -123,18 +126,27 @@ export class DeploymentsService {
       containerPort,
       hasEnvVars,
     );
-    const serviceYaml = generateServiceYaml(appName, 80, containerPort, project.port);
+    const serviceYaml = generateServiceYaml(
+      appName,
+      80,
+      containerPort,
+      project.port,
+    );
     const ingressYaml = generateIngressYaml(appName, domain, appName);
 
-    const postgresYaml = project.dbType === 'postgresql'
-      ? generatePostgresYaml(
-        appName,
-        this.configService.get<string>('INFRA_POSTGRES_USER') || 'user',
-        this.configService.get<string>('INFRA_POSTGRES_PASSWORD') || 'password',
-      )
-      : null;
+    const postgresYaml =
+      project.dbType === 'postgresql'
+        ? generatePostgresYaml(
+            appName,
+            this.configService.get<string>('INFRA_POSTGRES_USER') || 'postgres',
+            this.configService.get<string>('INFRA_POSTGRES_PASSWORD') ||
+              'password',
+          )
+        : null;
     const redisYaml = project.useRedis ? generateRedisYaml(appName) : null;
-    const esYaml = project.useElasticsearch ? generateElasticsearchYaml(appName) : null;
+    const esYaml = project.useElasticsearch
+      ? generateElasticsearchYaml(appName)
+      : null;
 
     this.runSshDeployment(
       project,
@@ -201,7 +213,9 @@ export class DeploymentsService {
 
     const buildArgs = envKeys
       .filter((key) => key.startsWith('VITE_') || key.startsWith('REACT_APP_'))
-      .map((key) => `--build-arg ${key}="${mergedEnv[key].replace(/"/g, '\\"')}"`)
+      .map(
+        (key) => `--build-arg ${key}="${mergedEnv[key].replace(/"/g, '\\"')}"`,
+      )
       .join(' ');
 
     const commands = [
@@ -253,12 +267,8 @@ export class DeploymentsService {
       ...(postgresYaml
         ? [`cat << 'EOF' > postgres.yaml\n${postgresYaml}\nEOF`]
         : []),
-      ...(redisYaml
-        ? [`cat << 'EOF' > redis.yaml\n${redisYaml}\nEOF`]
-        : []),
-      ...(esYaml
-        ? [`cat << 'EOF' > es.yaml\n${esYaml}\nEOF`]
-        : []),
+      ...(redisYaml ? [`cat << 'EOF' > redis.yaml\n${redisYaml}\nEOF`] : []),
+      ...(esYaml ? [`cat << 'EOF' > es.yaml\n${esYaml}\nEOF`] : []),
       `cat << 'EOF' > deployment.yaml\n${deploymentYaml}\nEOF`,
       `cat << 'EOF' > service.yaml\n${serviceYaml}\nEOF`,
       `cat << 'EOF' > ingress.yaml\n${ingressYaml}\nEOF`,

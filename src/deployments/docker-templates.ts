@@ -3,12 +3,11 @@ export const generateDockerfile = (
   installCommand: string,
   envKeys: string[] = [],
 ): string => {
-  const isYarn = installCommand ? installCommand.includes('yarn') : true; // Default to yarn if not specified
+  const isYarn = installCommand ? installCommand.includes('yarn') : true;
   const install = installCommand || 'yarn install';
   const build = isYarn ? 'yarn build' : 'npm run build';
   const lockFile = isYarn ? 'COPY yarn.lock ./' : '';
 
-  // Extract variables that need to be available at build time (e.g., VITE_*)
   const buildArgs = envKeys
     .filter((key) => key.startsWith('VITE_') || key.startsWith('REACT_APP_'))
     .map((key) => `ARG ${key}\nENV ${key}=$${key}`)
@@ -38,14 +37,15 @@ RUN ${build}
 
 EXPOSE 3000
 
-${framework === 'nestjs'
-          ? 'CMD ["node", "dist/main.js"]'
-          : framework === 'nodejs'
-            ? 'CMD ["npm", "start"]'
-            : framework === 'react'
-              ? 'RUN yarn global add serve\nCMD ["serve", "-s", "dist", "-l", "3000"]'
-              : 'CMD ["yarn", "start"]'
-        }
+${
+  framework === 'nestjs'
+    ? 'CMD ["node", "dist/main.js"]'
+    : framework === 'nodejs'
+      ? 'CMD ["npm", "start"]'
+      : framework === 'react'
+        ? 'RUN yarn global add serve\nCMD ["serve", "-s", "dist", "-l", "3000"]'
+        : 'CMD ["yarn", "start"]'
+}
 `;
 
     case 'springboot':

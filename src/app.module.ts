@@ -7,6 +7,7 @@ import { DeploymentsModule } from './deployments/deployments.module';
 import { User } from './auth/user.entity';
 import { Project } from './projects/project.entity';
 import { Deployment } from './deployments/deployment.entity';
+import { ProjectMember } from './projects/project-member.entity';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { Deployment } from './deployments/deployment.entity';
       username: process.env.POSTGRES_USER || 'postgres',
       password: process.env.POSTGRES_PASSWORD || 'postgres',
       database: process.env.POSTGRES_DB || 'deploy',
-      entities: [User, Project, Deployment],
+      entities: [User, Project, Deployment, ProjectMember],
       synchronize: true,
     }),
     AuthModule,

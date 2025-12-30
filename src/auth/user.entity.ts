@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Project } from '../projects/project.entity';
+import { ProjectMember } from '../projects/project-member.entity';
 
 @Entity()
 export class User {
@@ -9,7 +10,7 @@ export class User {
   @Column({ unique: true })
   githubId: string;
 
-  @Column()
+  @Column({ unique: true })
   username: string;
 
   @Column({ nullable: true })
@@ -26,4 +27,7 @@ export class User {
 
   @OneToMany(() => Project, (project) => project.user)
   projects: Project[];
+
+  @OneToMany(() => ProjectMember, (member) => member.user)
+  projectMembers: ProjectMember[];
 }
