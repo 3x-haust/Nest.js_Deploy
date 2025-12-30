@@ -221,22 +221,23 @@ export class DeploymentsService {
       `fi`,
 
       `docker push ${imageName}`,
+      `# K8s Apply`,
       `cd "$PROJECT_ROOT"`,
       ...(configMapYaml
-        ? [`echo "${configMapYaml.replace(/"/g, '\\"')}" > configmap.yaml`]
+        ? [`cat << 'EOF' > configmap.yaml\n${configMapYaml}\nEOF`]
         : []),
       ...(postgresYaml
-        ? [`echo "${postgresYaml.replace(/"/g, '\\"')}" > postgres.yaml`]
+        ? [`cat << 'EOF' > postgres.yaml\n${postgresYaml}\nEOF`]
         : []),
       ...(redisYaml
-        ? [`echo "${redisYaml.replace(/"/g, '\\"')}" > redis.yaml`]
+        ? [`cat << 'EOF' > redis.yaml\n${redisYaml}\nEOF`]
         : []),
       ...(esYaml
-        ? [`echo "${esYaml.replace(/"/g, '\\"')}" > es.yaml`]
+        ? [`cat << 'EOF' > es.yaml\n${esYaml}\nEOF`]
         : []),
-      `echo "${deploymentYaml.replace(/"/g, '\\"')}" > deployment.yaml`,
-      `echo "${serviceYaml.replace(/"/g, '\\"')}" > service.yaml`,
-      `echo "${ingressYaml.replace(/"/g, '\\"')}" > ingress.yaml`,
+      `cat << 'EOF' > deployment.yaml\n${deploymentYaml}\nEOF`,
+      `cat << 'EOF' > service.yaml\n${serviceYaml}\nEOF`,
+      `cat << 'EOF' > ingress.yaml\n${ingressYaml}\nEOF`,
       ...(postgresYaml ? ['kubectl apply -f postgres.yaml'] : []),
       ...(redisYaml ? ['kubectl apply -f redis.yaml'] : []),
       ...(esYaml ? ['kubectl apply -f es.yaml'] : []),

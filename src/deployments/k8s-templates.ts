@@ -3,7 +3,16 @@ export const generateConfigMapYaml = (
   envVariables: Record<string, string>,
 ) => {
   const envData = Object.entries(envVariables)
-    .map(([key, value]) => `  ${key}: "${value}"`)
+    .map(([key, value]) => {
+      if (value.includes('\n')) {
+        const indentedValue = value
+          .split('\n')
+          .map((line) => `    ${line}`)
+          .join('\n');
+        return `  ${key}: |-\n${indentedValue}`;
+      }
+      return `  ${key}: "${value.replace(/"/g, '\\"')}"`;
+    })
     .join('\n');
 
   return `apiVersion: v1
@@ -41,14 +50,13 @@ spec:
           image: ${imageName.replace('localhost', '192.168.0.2')}
           ports:
             - containerPort: ${containerPort}
-          imagePullPolicy: Always${
-            hasConfigMap
-              ? `
+          imagePullPolicy: Always${hasConfigMap
+    ? `
           envFrom:
             - configMapRef:
                 name: ${appName}-config`
-              : ''
-          }
+    : ''
+  }
 `;
 
 export const generateServiceYaml = (
