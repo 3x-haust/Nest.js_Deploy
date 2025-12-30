@@ -138,9 +138,10 @@ export class DeploymentsService {
 
     const finalizedEnv: Record<string, string> = {};
     Object.entries(mergedEnv).forEach(([key, value]) => {
-      const sanitizedKey = key.includes('.')
-        ? key.toUpperCase().replace(/\./g, '_')
-        : key;
+      const sanitizedKey =
+        key.includes('.') || key.includes('-')
+          ? key.toUpperCase().replace(/[\.-]/g, '_')
+          : key;
       finalizedEnv[sanitizedKey] = value;
       if (sanitizedKey !== key) {
         finalizedEnv[key] = value;
