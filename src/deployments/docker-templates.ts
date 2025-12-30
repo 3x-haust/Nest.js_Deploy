@@ -34,7 +34,7 @@ ${framework === 'nestjs'
           : framework === 'nodejs'
             ? 'CMD ["npm", "start"]'
             : framework === 'react'
-              ? 'RUN yarn global add serve && CMD ["serve", "-s", "dist", "-l", "3000"]'
+              ? 'RUN yarn global add serve\nCMD ["serve", "-s", "dist", "-l", "3000"]'
               : 'CMD ["yarn", "start"]'
         }
 `;
