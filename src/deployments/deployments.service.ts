@@ -105,7 +105,7 @@ export class DeploymentsService {
       infraEnv['ELASTICSEARCH_URL'] = `http://${appName}-elasticsearch:9200`;
     }
 
-    const mergedEnv = { ...infraEnv, ...(project.envVariables || {}) };
+    const mergedEnv = { ...(project.envVariables || {}), ...infraEnv };
 
     const hasEnvVars = Object.keys(mergedEnv).length > 0;
     const configMapYaml = hasEnvVars
